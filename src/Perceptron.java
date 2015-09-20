@@ -27,11 +27,8 @@ public class Perceptron extends SupervisedLearner{
 		int epocsSinceLastImprovement = 0;
 		int mostCorrectGuesses = 0;
 		int epoc = 0;
-		while(epocsSinceLastImprovement < 10){
+		while(epocsSinceLastImprovement < 5){
 			epoc++;
-			System.out.println("Epoc number: " + epoc);
-			System.out.println("Current record: " + mostCorrectGuesses + "/"+ features.rows());
-			System.out.println("Current bias: " + m_weights[m_weights.length-1]);
 			
 			//iterate through an epoch
 			int correctGuessesThisEpoch = 0;
@@ -45,15 +42,13 @@ public class Perceptron extends SupervisedLearner{
 					correctGuessesThisEpoch++;
 				}
 				else {
+					//adjust weights
 					if(output != 0){
 						output /= Math.abs(output); // standardizes to 1, -1
 					}
-					//System.out.println("Output: " + output);
 					for (int j = 0; j <= features.row(i).length; ++j){
 						double input = j == features.row(i).length ? 1 : features.row(i)[j];
 						double delta_weight = learningRate * (labels.row(i)[0] - output) * input;
-						//System.out.println("Weight: " + m_weights[j]);
-						//System.out.println("Delta weight: "+ delta_weight);
 						m_weights[j] += delta_weight;
 					}
 				}	
