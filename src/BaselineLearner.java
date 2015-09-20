@@ -26,8 +26,9 @@ public class BaselineLearner extends SupervisedLearner {
 	}
 
 	public void predict(double[] features, double[] labels) throws Exception {
-		for(int i = 0; i < m_labels.length; i++)
+		for(int i = 0; i < m_labels.length; i++){
 			labels[i] = m_labels[i];
+		}
 	}
 
 }
