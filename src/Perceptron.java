@@ -61,6 +61,7 @@ public class Perceptron extends SupervisedLearner{
 				epocsSinceLastImprovement++;
 			}
 		}
+		System.out.println("Concluded with " + epoc + " total epocs at learning rate of " + learningRate);
 
 		
 	}

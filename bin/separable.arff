@@ -1,0 +1,14 @@
+@relation athletes
+@attribute 'runs marathons' { 'n', 'y'}
+@attribute 'runs shell scripts' { 'n', 'y'}
+@attribute 'likes Nintendo' { 'n', 'y'}
+@attribute 'Class' { 'athlete', 'programmer'}
+@data
+'n','n','y','athlete'
+'y','n','n','athlete'
+'n','n','n','athlete'
+'y','n','y','athlete'
+'n','y','y','programmer'
+'y','y','y','programmer'
+'n','y','n','programmer'
+'y','y','n','programmer'
