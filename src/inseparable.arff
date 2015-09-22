@@ -1,14 +1,14 @@
 @relation athletes
-@attribute 'runs marathons' { 'n', 'y'}
+@attribute 'height percentile' Continuous
 @attribute 'eats cheese' { 'n', 'y'}
 @attribute 'likes Nintendo' { 'n', 'y'}
 @attribute 'Class' { 'athlete', 'programmer'}
 @data
-'n','n','y','athlete'
-'y','y','n','athlete'
-'n','n','n','athlete'
-'y','n','y','athlete'
-'n','y','y','programmer'
-'y','y','y','programmer'
-'n','y','n','programmer'
-'y','n','n','programmer'
+0.9,'n','y','athlete'
+0.9,'y','n','athlete'
+0.9,'n','n','athlete'
+0.3,'n','n','athlete'
+0.9,'y','y','programmer'
+0.9,'y','y','programmer'
+0.9,'y','n','programmer'
+0.9,'n','n','programmer'
