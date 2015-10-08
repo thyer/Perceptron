@@ -7,83 +7,66 @@ public class BackPropagation extends SupervisedLearner
 	ArrayList<ArrayList<Node>> layers;	
 	int bias = 1;
 	
-	public BackPropagation(Random random)
-	{
+	public BackPropagation(Random random){
 		this.random = random;
 	}
 	
-	public void create_layer(int num_input, int num_output, int num_layer)
-	{
+	private void makeLayer(int cInputNodes, int cOutputNodes, int cLayers){
 		layers = new ArrayList<ArrayList<Node>>(); 
 		
-		int[] num_nodes = new int[num_layer + 2];
+		int[] cNodesPerLayer = new int[cLayers + 2];
 
-		num_nodes[0] = num_input;
-		num_nodes[1] = 64; 		// specify the number of nodes for the first hidden layer
-		num_nodes[2] = 64;		// specify the number of nodes for the second hidden layer
-		num_nodes[3] = 64;
-		num_nodes[4] = 64;	
-		num_nodes[5] = num_output;		
+		cNodesPerLayer[0] = cInputNodes;
+		cNodesPerLayer[1] = 64; 		// TODO: specify the number of nodes for the first hidden layer
+		cNodesPerLayer[2] = 64;			// TODO: specify the number of nodes for the second hidden layer
+		cNodesPerLayer[3] = 64;
+		cNodesPerLayer[4] = 64;	
+		cNodesPerLayer[5] = cOutputNodes;		
 		
-		for(int i = 0; i <= num_layer; i++)
-		{
-			ArrayList<Node> one_layer = new ArrayList<Node>();			
-			for(int j = 0; j < num_nodes[i+1]; j++)
-			{
-				Node new_node = new Node(num_nodes[i] + 1);
-				one_layer.add(new_node);
+		for(int i = 0; i <= cLayers; i++){
+			ArrayList<Node> iLayer = new ArrayList<Node>();			
+			for(int j = 0; j < cNodesPerLayer[i+1]; j++){
+				Node tNode = new Node(cNodesPerLayer[i] + 1);
+				iLayer.add(tNode);
 			}
-			layers.add(one_layer);
-		}		
-		
+			layers.add(iLayer);
+		}			
 	}
 
-	public void forward_path(Matrix features, int a) // 'a' is the row index of the Matrix
-	{
-		for(int i = 0; i < layers.size(); i++)
-		{
-			if(i == 0) 		// first hidden layer
-			{	
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
-					double net = bias * layers.get(i).get(j).get_weight_element(0);
-					for(int k = 0; k < features.cols(); k++)
-					{
-						net += features.get(a, k) * layers.get(i).get(j).get_weight_element(k + 1);
+	public void forward_path(Matrix features, int a){ // where a is row of matrix
+		for(int i = 0; i < layers.size(); i++){
+			if(i == 0){ 		// first hidden layer	
+				for(int j = 0; j < layers.get(i).size(); j++){
+					double net = bias * layers.get(i).get(j).getWeightElement(0);
+					for(int k = 0; k < features.cols(); k++){
+						net += features.get(a, k) * layers.get(i).get(j).getWeightElement(k + 1);
 					}
 					double output = 1/(1+Math.exp(-net));
-					layers.get(i).get(j).set_output(output);
+					layers.get(i).get(j).setOutput(output);
 				}
 			}
-			else 				// all the other layers
-			{	
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
-					double net = bias*layers.get(i).get(j).get_weight_element(0);
-					for(int k = 0; k < layers.get(i).get(j).get_num_weight() - 1; k++)
-					{
-						net += layers.get(i - 1).get(k).get_output() * layers.get(i).get(j).get_weight_element(k + 1);
+			else{
+				for(int j = 0; j < layers.get(i).size(); j++){
+					double net = bias*layers.get(i).get(j).getWeightElement(0);
+					for(int k = 0; k < layers.get(i).get(j).getNumWeight() - 1; k++){
+						net += layers.get(i - 1).get(k).getOutput() * layers.get(i).get(j).getWeightElement(k + 1);
 					}
 					double output = 1 / (1 + Math.exp(-net));
-					layers.get(i).get(j).set_output(output);
+					layers.get(i).get(j).setOutput(output);
 				}
 			}
 		}	
 	}
 	
-	public double backward_path(Matrix features, Matrix labels, int a) 		// 'a' is the row index of the Matrix
-	{
-		double learning_rate = 0.1;		// specify the learning rate
+	public double backward_path(Matrix features, Matrix labels, int a){
+		double dLearningRate = 0.1;		// specify the learning rate
 		double momentum = 0;
 		double mse = 0;
 		
-		for(int i = layers.size()-1; i >= 0; i--)
-		{
-			if(i == layers.size()-1) 		// output layer
-			{
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
-					double output = layers.get(i).get(j).get_output();
+		for(int i = layers.size()-1; i >= 0; i--){
+			if(i == layers.size()-1){ 		// output layer
+				for(int j = 0; j < layers.get(i).size(); j++){
+					double output = layers.get(i).get(j).getOutput();
 					double fnet = output * (1 - output);
 					int answer = -1;
 					if(labels.get(a, 0) == j){
@@ -96,63 +79,55 @@ public class BackPropagation extends SupervisedLearner
 					
 					mse += 0.5 * Math.pow((answer-output), 2);
 					
-					layers.get(i).get(j).set_delta(delta);
-					for(int k = 0; k < layers.get(i).get(j).get_num_weight(); k++)
-					{
+					layers.get(i).get(j).setDelta(delta);
+					for(int k = 0; k < layers.get(i).get(j).getNumWeight(); k++){
 						double change = 0;
 						if(k == 0) 		// for bias node output
-							change = (learning_rate * delta * bias) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
+							change = (dLearningRate * delta * bias) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
 						else
-							change = (learning_rate * delta * layers.get(i-1).get(k-1).get_output()) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
-						layers.get(i).get(j).set_weight_change_element(k, change);
+							change = (dLearningRate * delta * layers.get(i-1).get(k-1).getOutput()) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
+						layers.get(i).get(j).setWeightChangeElement(k, change);
 					}
 				}
 			}
 
-			else if(i > 0) 			// hidden layer
-			{	
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
-					double output = layers.get(i).get(j).get_output();
+			else if(i > 0){			// hidden layer
+				for(int j = 0; j < layers.get(i).size(); j++){
+					double output = layers.get(i).get(j).getOutput();
 					double fnet = output * (1 - output);
 					double sum = 0;
-					for(int k = 0; k < layers.get(i + 1).size(); k++)
-					{
-						sum += layers.get(i + 1).get(k).get_delta() * layers.get(i + 1).get(k).get_weight_element(j + 1);
+					for(int k = 0; k < layers.get(i + 1).size(); k++){
+						sum += layers.get(i + 1).get(k).getDelta() * layers.get(i + 1).get(k).getWeightElement(j + 1);
 					}
 					double delta = fnet * sum;
-					layers.get(i).get(j).set_delta(delta);
-					for(int k = 0; k < layers.get(i).get(j).get_num_weight(); k++)
-					{
+					layers.get(i).get(j).setDelta(delta);
+					for(int k = 0; k < layers.get(i).get(j).getNumWeight(); k++){
 						double change = 0;
 						if(k == 0) 		// for bias node output
-							change = (learning_rate * delta * bias) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
+							change = (dLearningRate * delta * bias) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
 						else
-							change = (learning_rate * delta * layers.get(i - 1).get(k - 1).get_output()) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
-						layers.get(i).get(j).set_weight_change_element(k, change);
+							change = (dLearningRate * delta * layers.get(i - 1).get(k - 1).getOutput()) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
+						layers.get(i).get(j).setWeightChangeElement(k, change);
 					}						
 				}
 			}
-			else			// first layer
-			{	
+			else{			// first layer	
 				for(int j = 0; j < layers.get(i).size(); j++){
-					double output = layers.get(i).get(j).get_output();
+					double output = layers.get(i).get(j).getOutput();
 					double fnet = output * (1 - output);
 					double sum = 0;
-					for(int k = 0; k < layers.get(i + 1).size(); k++)
-					{
-						sum += layers.get(i + 1).get(k).get_delta() * layers.get(i + 1).get(k).get_weight_element(j + 1);
+					for(int k = 0; k < layers.get(i + 1).size(); k++){
+						sum += layers.get(i + 1).get(k).getDelta() * layers.get(i + 1).get(k).getWeightElement(j + 1);
 					}
 					double delta = fnet * sum;
-					layers.get(i).get(j).set_delta(delta);
-					for(int k = 0; k < layers.get(i).get(j).get_num_weight(); k++)
-					{
+					layers.get(i).get(j).setDelta(delta);
+					for(int k = 0; k < layers.get(i).get(j).getNumWeight(); k++){
 						double change = 0;
 						if(k == 0) 		// for bias node output
-							change = (learning_rate * delta * bias) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
+							change = (dLearningRate * delta * bias) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
 						else
-							change = (learning_rate * delta * features.get(a, k - 1)) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
-						layers.get(i).get(j).set_weight_change_element(k, change);
+							change = (dLearningRate * delta * features.get(a, k - 1)) + (momentum * layers.get(i).get(j).get_weight_change_element(k));
+						layers.get(i).get(j).setWeightChangeElement(k, change);
 					}						
 				}					
 			}
@@ -160,16 +135,12 @@ public class BackPropagation extends SupervisedLearner
 		return mse;
 	}
 
-	public void update_weights()
-	{
-		for(int i = 0; i < layers.size(); i++)
-		{
-			for(int j = 0; j < layers.get(i).size(); j++)
-			{
-				for(int k = 0; k < layers.get(i).get(j).num_weight; k++)
-				{
-					double new_weight = layers.get(i).get(j).get_weight_element(k) + layers.get(i).get(j).get_weight_change_element(k);
-					layers.get(i).get(j).set_weight_element(k, new_weight);
+	public void update_weights(){
+		for(int i = 0; i < layers.size(); i++){
+			for(int j = 0; j < layers.get(i).size(); j++){
+				for(int k = 0; k < layers.get(i).get(j).numWeight; k++){
+					double new_weight = layers.get(i).get(j).getWeightElement(k) + layers.get(i).get(j).get_weight_change_element(k);
+					layers.get(i).get(j).setWeightElement(k, new_weight);
 				}
 			}
 		}
@@ -181,7 +152,7 @@ public class BackPropagation extends SupervisedLearner
 		int num_input = features.cols(); 
 		int num_output = labels.valueCount(0);
 		int num_layer = 4;		// specify the number of hidden layers
-		create_layer(num_input, num_output, num_layer);		// a function to set up the hidden layers
+		makeLayer(num_input, num_output, num_layer);		// a function to set up the hidden layers
 		
 		int training_size = (int)(0.9 * features.rows());
 
@@ -193,8 +164,7 @@ public class BackPropagation extends SupervisedLearner
 		ArrayList<Double> test_mse = new ArrayList<>();
 		ArrayList<Double> accuracies = new ArrayList<>();
 		
-		do
-		{	
+		do{	
 			features.shuffle(random, labels);
 			Matrix train_features = new Matrix(features, 0, 0, training_size, features.cols());
 			Matrix train_labels = new Matrix(labels, 0, 0, training_size, 1);
@@ -243,12 +213,10 @@ public class BackPropagation extends SupervisedLearner
 		
 	}
 	
-	public double calculate_accuracy(Matrix features, Matrix labels) throws Exception
-	{
+	public double calculate_accuracy(Matrix features, Matrix labels) throws Exception{
 		int correctCount = 0;
 		double[] prediction = new double[1];
-		for(int i = 0; i < features.rows(); i++)
-		{
+		for(int i = 0; i < features.rows(); i++){
 			double[] feat = new double[features.cols()];
 			feat = features.row(i);
 								
@@ -268,49 +236,41 @@ public class BackPropagation extends SupervisedLearner
 	public void predict(double[] features, double[] labels) throws Exception 
 	{
 		double final_index = -1;
-		for(int i = 0; i < layers.size(); i++)
-		{
+		for(int i = 0; i < layers.size(); i++){
 			if(i == 0) 		// first hidden layer
 			{	
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
-					double net = bias*layers.get(i).get(j).get_weight_element(0);
-					for(int k = 0; k < features.length; k++)
-					{
-						net += features[k]*layers.get(i).get(j).get_weight_element(k + 1);
+				for(int j = 0; j < layers.get(i).size(); j++){
+					double net = bias*layers.get(i).get(j).getWeightElement(0);
+					for(int k = 0; k < features.length; k++){
+						net += features[k]*layers.get(i).get(j).getWeightElement(k + 1);
 					}
 					double output = 1 / (1+Math.exp(-net));
-					layers.get(i).get(j).set_output(output);
+					layers.get(i).get(j).setOutput(output);
 				}
 			}
 			else if(i < layers.size() - 1) 				// other hidden layers
 			{	
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
-					double net = bias*layers.get(i).get(j).get_weight_element(0);
-					for(int k = 0; k < layers.get(i - 1).size(); k++)
-					{
-						net += layers.get(i - 1).get(k).get_output() * layers.get(i).get(j).get_weight_element(k + 1);
+				for(int j = 0; j < layers.get(i).size(); j++){
+					double net = bias*layers.get(i).get(j).getWeightElement(0);
+					for(int k = 0; k < layers.get(i - 1).size(); k++){
+						net += layers.get(i - 1).get(k).getOutput() * layers.get(i).get(j).getWeightElement(k + 1);
 					}
 					double output = 1 / (1+Math.exp(-net));
-					layers.get(i).get(j).set_output(output);
+					layers.get(i).get(j).setOutput(output);
 				}
 			}
 			else		// output layer
 			{	
 				double answer = -1;
 				int index = -1;
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
-					double net = bias * layers.get(i).get(j).get_weight_element(0);
-					for(int k = 0; k < layers.get(i-1).size(); k++)
-					{
-						net += layers.get(i - 1).get(k).get_output() * layers.get(i).get(j).get_weight_element(k + 1);
+				for(int j = 0; j < layers.get(i).size(); j++){
+					double net = bias * layers.get(i).get(j).getWeightElement(0);
+					for(int k = 0; k < layers.get(i-1).size(); k++){
+						net += layers.get(i - 1).get(k).getOutput() * layers.get(i).get(j).getWeightElement(k + 1);
 					}
 					double output = 1 / (1 + Math.exp(-net));
-					layers.get(i).get(j).set_output(output);
-					if(output > answer)
-					{
+					layers.get(i).get(j).setOutput(output);
+					if(output > answer){
 						answer = output;
 						index = j;
 					}
@@ -324,50 +284,40 @@ public class BackPropagation extends SupervisedLearner
 	public double predict(double[] features, int target) throws Exception 
 	{
 		double mse = 0;
-		for(int i = 0; i < layers.size(); i++)
-		{
-			if(i == 0) 		// first hidden layer
-			{	
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
-					double net = bias*layers.get(i).get(j).get_weight_element(0);
-					for(int k = 0; k < features.length; k++)
-					{
-						net += features[k] * layers.get(i).get(j).get_weight_element(k + 1);
+		for(int i = 0; i < layers.size(); i++){
+			if(i == 0) {	// first hidden layer	
+				for(int j = 0; j < layers.get(i).size(); j++){
+					double net = bias*layers.get(i).get(j).getWeightElement(0);
+					for(int k = 0; k < features.length; k++){
+						net += features[k] * layers.get(i).get(j).getWeightElement(k + 1);
 					}
 					double output = 1 / (1 + Math.exp(-net));
-					layers.get(i).get(j).set_output(output);
+					layers.get(i).get(j).setOutput(output);
 				}
 			}
-			else if(i < layers.size()-1) 				// other hidden layers
-			{	
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
-					double net = bias*layers.get(i).get(j).get_weight_element(0);
-					for(int k = 0; k < layers.get(i - 1).size(); k++)
-					{
-						net += layers.get(i - 1).get(k).get_output() * layers.get(i).get(j).get_weight_element(k + 1);
+			else if(i < layers.size()-1) {				// other hidden layers
+				for(int j = 0; j < layers.get(i).size(); j++){
+					double net = bias*layers.get(i).get(j).getWeightElement(0);
+					for(int k = 0; k < layers.get(i - 1).size(); k++){
+						net += layers.get(i - 1).get(k).getOutput() * layers.get(i).get(j).getWeightElement(k + 1);
 					}
 					double output = 1 / (1 + Math.exp(-net));
-					layers.get(i).get(j).set_output(output);
+					layers.get(i).get(j).setOutput(output);
 				}
 			}
-			else		// output layer
-			{	
-				for(int j = 0; j < layers.get(i).size(); j++)
-				{
+			else{	//output layer
+				for(int j = 0; j < layers.get(i).size(); j++){
 					double answer = -1;
 					if(target == j)
 						answer = 1;
 					else
 						answer = 0;
-					double net = bias*layers.get(i).get(j).get_weight_element(0);
-					for(int k = 0; k < layers.get(i - 1).size(); k++)
-					{
-						net += layers.get(i - 1).get(k).get_output() * layers.get(i).get(j).get_weight_element(k + 1);
+					double net = bias*layers.get(i).get(j).getWeightElement(0);
+					for(int k = 0; k < layers.get(i - 1).size(); k++){
+						net += layers.get(i - 1).get(k).getOutput() * layers.get(i).get(j).getWeightElement(k + 1);
 					}
 					double output = 1 / (1 + Math.exp(-net));
-					layers.get(i).get(j).set_output(output);
+					layers.get(i).get(j).setOutput(output);
 					mse += 0.5 * Math.pow((answer-output), 2);
 				}
 			}
@@ -378,85 +328,72 @@ public class BackPropagation extends SupervisedLearner
 	private class Node
 	{
 		
-		private double[] weight;
-		private double[] weight_change;
-		private int num_weight;
+		private double[] rgWeight;
+		private double[] rgDWeightChange;
+		private int numWeight;
 		private double output;
 		private double delta;
 		
-		public Node(int num_weight)
-		{
-			this.set_output(0);
-			this.set_delta(0);
-			this.weight = new double[num_weight];
-			this.weight_change = new double[num_weight];
-			this.num_weight = num_weight;
-			initialize_weight(); 		// when created, the node initializes its weights
+		public Node(int numWeight){
+			this.setOutput(0);
+			this.setDelta(0);
+			this.rgWeight = new double[numWeight];
+			this.rgDWeightChange = new double[numWeight];
+			this.numWeight = numWeight;
+			initWeights(); 		// when created, the node initializes its weights
 		}
 
-		public void initialize_weight()
-		{
-			for(int i = 0; i < weight.length; i++)
-			{
-				weight[i] = get_gaussian();
+		public void initWeights(){
+			for(int i = 0; i < rgWeight.length; i++){
+				rgWeight[i] = getRandomDouble();
 			}
 		}
 		
-		public double get_gaussian()
-		{
-			double min = -1 / Math.sqrt(num_weight);
-			double max = 1 / Math.sqrt(num_weight);
+		public double getRandomDouble()	{ //returns a random number following gaussian distribution
+			double min = -1 / Math.sqrt(numWeight);
+			double max = 1 / Math.sqrt(numWeight);
 			
-			while(true)
-			{
-				double gaussian = random.nextGaussian();
-				if(gaussian <= max && gaussian >= min && gaussian != 0)
-					return gaussian;
+			while(true){
+				double output = random.nextGaussian();
+				if(output <= max && output >= min && output != 0){
+					return output;
+				}
 			}
 		}
 		
-		public void set_weight_element(int index, double change)
-		{
-			this.weight[index] = change;
+		public void setWeightElement(int index, double change){
+			this.rgWeight[index] = change;
 		}
 		
-		public double get_weight_element(int index)
-		{
-			return weight[index];
+		public double getWeightElement(int index){
+			return rgWeight[index];
 		}
 		
-		public double get_output() 
-		{
+		public double getOutput() {
 			return output;
 		}
 		
-		public void set_output(double output)
-		{
+		public void setOutput(double output){
 			this.output = output;
 		}
 		
-		public void set_weight_change_element(int index, double change)
-		{
-			this.weight_change[index] = change;
+		public void setWeightChangeElement(int index, double change){
+			this.rgDWeightChange[index] = change;
 		}
 		
-		public double get_weight_change_element(int index)
-		{
-			return weight_change[index];
+		public double get_weight_change_element(int index){
+			return rgDWeightChange[index];
 		}
 		
-		public int get_num_weight()
-		{
-			return num_weight;
+		public int getNumWeight(){
+			return numWeight;
 		}
 
-		public double get_delta() 
-		{
+		public double getDelta() {
 			return delta;
 		}
 		
-		public void set_delta(double delta) 
-		{
+		public void setDelta(double delta) {
 			this.delta = delta;
 		}
 	}
