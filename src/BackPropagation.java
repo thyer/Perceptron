@@ -248,7 +248,7 @@ public class BackPropagation extends SupervisedLearner
 					layers.get(i).get(j).setOutput(output);
 				}
 			}
-			else if(i < layers.size() - 1) 				// other hidden layers
+			else if(i < layers.size() - 1) 		// other hidden layers
 			{	
 				for(int j = 0; j < layers.get(i).size(); j++){
 					double net = bias*layers.get(i).get(j).getWeightElement(0);
@@ -259,7 +259,7 @@ public class BackPropagation extends SupervisedLearner
 					layers.get(i).get(j).setOutput(output);
 				}
 			}
-			else		// output layer
+			else	// for output layer
 			{	
 				double answer = -1;
 				int index = -1;
@@ -284,6 +284,7 @@ public class BackPropagation extends SupervisedLearner
 	public double predict(double[] features, int target) throws Exception 
 	{
 		double mse = 0;
+		
 		for(int i = 0; i < layers.size(); i++){
 			if(i == 0) {	// first hidden layer	
 				for(int j = 0; j < layers.get(i).size(); j++){
@@ -295,7 +296,7 @@ public class BackPropagation extends SupervisedLearner
 					layers.get(i).get(j).setOutput(output);
 				}
 			}
-			else if(i < layers.size()-1) {				// other hidden layers
+			else if(i < layers.size()-1) {		// other hidden layers
 				for(int j = 0; j < layers.get(i).size(); j++){
 					double net = bias*layers.get(i).get(j).getWeightElement(0);
 					for(int k = 0; k < layers.get(i - 1).size(); k++){
@@ -305,12 +306,12 @@ public class BackPropagation extends SupervisedLearner
 					layers.get(i).get(j).setOutput(output);
 				}
 			}
-			else{	//output layer
+			else{	// for the output layer
 				for(int j = 0; j < layers.get(i).size(); j++){
 					double answer = -1;
-					if(target == j)
+					if(target == j)	//should be outputting true
 						answer = 1;
-					else
+					else			//should be outputting false
 						answer = 0;
 					double net = bias*layers.get(i).get(j).getWeightElement(0);
 					for(int k = 0; k < layers.get(i - 1).size(); k++){
@@ -318,7 +319,8 @@ public class BackPropagation extends SupervisedLearner
 					}
 					double output = 1 / (1 + Math.exp(-net));
 					layers.get(i).get(j).setOutput(output);
-					mse += 0.5 * Math.pow((answer-output), 2);
+					mse += Math.pow((answer-output), 2)/2.0;
+					assert(answer != -1);
 				}
 			}
 		}		
