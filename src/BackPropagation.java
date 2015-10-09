@@ -16,12 +16,26 @@ public class BackPropagation extends SupervisedLearner
 		
 		int[] cNodesPerLayer = new int[cLayers + 2];
 
-		cNodesPerLayer[0] = cInputNodes;
-		cNodesPerLayer[1] = 64; 		// TODO: specify the number of nodes for the first hidden layer
-		cNodesPerLayer[2] = 64;			// TODO: specify the number of nodes for the second hidden layer
-		cNodesPerLayer[3] = 64;
-		cNodesPerLayer[4] = 64;	
-		cNodesPerLayer[5] = cOutputNodes;		
+//		cNodesPerLayer[0] = cInputNodes;
+//		cNodesPerLayer[1] = 64; 		// TODO: specify the number of nodes for the first hidden layer
+//		cNodesPerLayer[2] = 64;			// TODO: specify the number of nodes for the second hidden layer
+//		cNodesPerLayer[3] = 64;
+//		cNodesPerLayer[4] = 64;	
+//		cNodesPerLayer[5] = cOutputNodes;	
+		for(int i = 0;  i< cNodesPerLayer.length; i++){
+			int cNodes = 0;
+			if(i == 0){
+				cNodes = cInputNodes;
+			}
+			else if(i == cLayers + 1){
+				cNodes = cOutputNodes;
+			}
+			else{
+				cNodes = 64;
+			}
+			
+			cNodesPerLayer[i] = cNodes;
+		}
 		
 		for(int i = 0; i <= cLayers; i++){
 			ArrayList<Node> iLayer = new ArrayList<Node>();			
@@ -151,18 +165,16 @@ public class BackPropagation extends SupervisedLearner
 	{
 		int num_input = features.cols(); 
 		int num_output = labels.valueCount(0);
-		int num_layer = 4;		// specify the number of hidden layers
+		int num_layer = 2;		// specify the number of hidden layers
 		makeLayer(num_input, num_output, num_layer);		// a function to set up the hidden layers
 		
-		int training_size = (int)(0.9 * features.rows());
+		int training_size = (int)(0.8 * features.rows());
 
-		
-		int counter = 0;
-		boolean continue_loop = true;
-		
 		ArrayList<Double> train_mse = new ArrayList<>();
 		ArrayList<Double> test_mse = new ArrayList<>();
 		ArrayList<Double> accuracies = new ArrayList<>();
+		int counter = 0;
+		boolean loop = true;
 		
 		do{	
 			features.shuffle(random, labels);
@@ -170,29 +182,29 @@ public class BackPropagation extends SupervisedLearner
 			Matrix train_labels = new Matrix(labels, 0, 0, training_size, 1);
 			Matrix test_features = new Matrix(features, training_size, 0, features.rows()-training_size, features.cols());
 			Matrix test_labels = new Matrix(labels, training_size, 0, features.rows()-training_size, 1);
-			double mse = 0;
+			double fpMSE = 0;
 			for(int i = 0; i < train_features.rows(); i++)
 			{
 				forward_path(train_features, i);
-				mse += backward_path(train_features, train_labels, i);
+				fpMSE += backward_path(train_features, train_labels, i);
 				update_weights();
 			}
-			mse = mse/train_features.rows();
-			train_mse.add(mse);
+			fpMSE = fpMSE/train_features.rows();
+			train_mse.add(fpMSE);
 			
-			mse = 0;
+			fpMSE = 0;
 			for(int i = 0; i < test_features.rows(); i++)
 			{	
 				forward_path(test_features, i);
-				mse += backward_path(test_features, test_labels, i);
+				fpMSE += backward_path(test_features, test_labels, i);
 				update_weights();
 			}
-			mse = mse/test_features.rows();
-			test_mse.add(mse);
+			fpMSE = fpMSE/test_features.rows();
+			test_mse.add(fpMSE);
 			
 			double current_accuracy = calculate_accuracy(test_features, test_labels);
 			
-			if(counter > 100)
+			if(counter > 300)
 			{
 				double lowest = 1;
 				for(int i = 0; i < 100; i++)
@@ -201,15 +213,17 @@ public class BackPropagation extends SupervisedLearner
 						lowest = accuracies.get(accuracies.size() - 1 - i);
 				}
 				if(lowest > current_accuracy)
-					continue_loop = false;
+					loop = false;
 			}
 			accuracies.add(current_accuracy);
 			counter++;
-		}while(continue_loop);
+		}while(loop);
 		
 		System.out.println("train_mse: " + train_mse.get(train_mse.size() - 1));
 		System.out.println("validation_mse: " + test_mse.get(test_mse.size() - 1));
 		System.out.println("validation_accuracy: " + accuracies.get(accuracies.size() - 1));
+		System.out.println("validation accuracy along the way: " + accuracies.toString());
+		System.out.println("Total epochs: " + counter + "\n\n");
 		
 	}
 	
@@ -351,7 +365,7 @@ public class BackPropagation extends SupervisedLearner
 			}
 		}
 		
-		public double getRandomDouble()	{ //returns a random number following gaussian distribution
+		public double getRandomDouble()	{ //returns a random number following the Gaussian distribution
 			double min = -1 / Math.sqrt(numWeight);
 			double max = 1 / Math.sqrt(numWeight);
 			
