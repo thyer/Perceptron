@@ -21,6 +21,7 @@ public class ID3Tree {
 		
 		//calculate which feature to split on
 		int splitIndex = node.chooseFeature(nodeFeatures, nodeLabels, nodeSkipIndices);
+		System.out.println("Split index: " + splitIndex);
 		
 		//do the split, recursively call on them
 		nodeSkipIndices.add(splitIndex);

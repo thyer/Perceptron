@@ -56,16 +56,21 @@ public class DecisionTreeNode{
 			for (int j = 0; j < features.rows(); j++) {
 				if (features.get(j, feature_idx) == k) {
 					int label = (int) labels.get(j, 0);
-					//histo.get(label)++;
+					Double value = 1.0;
+					if(histo.get(label) != null){
+						value += histo.get(label);
+					}
+					histo.put(label, value);
 					total++;
 				}
 			}
-			for (int j = 0; j < histo.size(); j++) {
-				//histo[j] /= total;
+			for (int j : histo.keySet()) {
+				histo.put(j, histo.get(j)/total);
 			}
 			double entropy = entropy(histo);
 			score += (total / features.rows()) * entropy;
 		}
+		System.out.println(histo.toString());
 		return score;
 	}
 	
