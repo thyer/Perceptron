@@ -44,7 +44,7 @@ public class DecisionTreeNode{
 		return min_idx;
 	}
 	
-	public double getEstimate(){
+	private double getEstimate(){
 		return this.getLabels().mostCommonValue(0);
 	}
 	
