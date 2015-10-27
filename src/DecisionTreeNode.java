@@ -36,6 +36,7 @@ public class DecisionTreeNode{
 			
 			//find lowest info split for remaining features
 			double feature_info = info(features, labels, k);
+			System.out.println("Info for feature " + k + ": " + feature_info);
 			if (feature_info < min_info) {
 				min_idx = k;
 				min_info = feature_info;
@@ -52,7 +53,7 @@ public class DecisionTreeNode{
 		Map<Integer, Double> histo = new TreeMap<Integer, Double>();
 		double score = 0;
 		for (int k = 0; k < features.valueCount(feature_idx); k++) {
-			int total = 0;
+			double total = 0;
 			for (int j = 0; j < features.rows(); j++) {
 				if (features.get(j, feature_idx) == k) {
 					int label = (int) labels.get(j, 0);
@@ -70,7 +71,7 @@ public class DecisionTreeNode{
 			double entropy = entropy(histo);
 			score += (total / features.rows()) * entropy;
 		}
-		System.out.println(histo.toString());
+		//System.out.println("Histo for index: " + feature_idx + ": " + histo.toString());
 		return score;
 	}
 	
@@ -120,8 +121,11 @@ public class DecisionTreeNode{
 	}
 	
 	private double entropy(Map<Integer, Double> histo) {
-		// TODO Auto-generated method stub
-		return 0;
+		double output = 1;
+		for (int key : histo.keySet()){
+			output *= histo.get(key);
+		}
+		return output;
 	}
 	
 	
