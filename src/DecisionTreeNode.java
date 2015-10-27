@@ -58,6 +58,14 @@ public class DecisionTreeNode{
 		return score;
 	}
 	
+	public double getEstimate(){
+		return this.getLabels().mostCommonValue(0);
+	}
+	
+	public double decide(double[] features){
+		return this.getEstimate(); 
+	}
+	
 	public boolean splitOnFeature(int splitIndex, List<Integer> skipIndices){
 		this.setSplitIndex(splitIndex);
 		return false;

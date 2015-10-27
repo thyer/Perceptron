@@ -12,7 +12,7 @@ public class ID3 extends SupervisedLearner{
 	}
 
 	public void predict(double[] features, double[] labels) throws Exception {
-		
+		labels[0] = tree.predict(features);
 	}
 
 }

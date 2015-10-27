@@ -93,12 +93,6 @@ public class Perceptron extends SupervisedLearner{
 		labels [0] = (total + m_weights[m_weights.length-1] > 0) ? 1 : 0;
 		if(!printedWeights){
 			printedWeights = true;
-//			System.out.println("Weights: ");
-//			for (int i = 0; i < m_weights.length; ++i){
-//				String out = "";
-//				out = (i==(m_weights.length - 1)) ? "Bias: " : "W" + i;
-//				System.out.println("\t" + out + ":" + m_weights[i]);
-//			}
 		}
 	}
 }

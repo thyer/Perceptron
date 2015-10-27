@@ -31,6 +31,11 @@ public class ID3Tree {
 		}
 	}
 	
+	public double predict(double[] features){
+		DecisionTreeNode temp = root;
+		return root.decide(features);
+	}
+	
 	
 
 }
