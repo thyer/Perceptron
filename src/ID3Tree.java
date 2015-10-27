@@ -31,6 +31,10 @@ public class ID3Tree {
 		}
 	}
 	
+	public double decide(double[] features){
+		
+	}
+	
 	
 
 }
