@@ -71,15 +71,36 @@ public class DecisionTreeNode{
 	
 	public boolean splitOnFeature(int splitIndex, List<Integer> skipIndices){
 		this.setSplitIndex(splitIndex);
+		boolean successfulSplit = false;
 		
 		ArrayList<DecisionTreeNode> kiddies = new ArrayList<DecisionTreeNode>();
-		Matrix[] childrenFeatures = this.getFeatures().splitMatrixOnColumn(splitIndex, this.getLabels());
-		Matrix[] childrenLabels = this.getFeatures().splitMatrixOnColumn(splitIndex, this.getLabels());
+		MatrixSplitter ms = new MatrixSplitter(this.getFeatures(), this.getLabels(), splitIndex);
+		try{
+			Matrix[] childrenFeatures = ms.getSplitFeatures();
+			Matrix[] childrenLabels = ms.getSplitLabels();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 		for(int i = 0; i < childrenFeatures.size(); ++i){
-			kiddies.add(new DecisionTreeNode())
+			ArrayList<Integer> newSkipIndices = new ArrayList<Integer>(this.getSkipIndices());
+			newSkipIndices.add(splitIndex);
+			if(childrenFeatures[i].rows() > 0){
+				kiddies.add(new DecisionTreeNode(childrenFeatures[i], childrenLabels[i], newSkipIndices));
+				successfulSplit = true;
+			}
+			else{
+				kiddies.add(null);	//this basically says there's no rows for this particular split, so don't go down this path
+			}
 		}
 		
-		return false;
+		this.setChildren(kiddies.toArray());
+		if(successfulSplit){
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 	
 	private double entropy(Map<Integer, Double> histo) {
