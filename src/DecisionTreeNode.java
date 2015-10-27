@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -13,12 +14,16 @@ public class DecisionTreeNode{
 		this.setFeatures(features);
 		this.setLabels(labels);
 		this.setSkipIndices(skipIndices);
+		this.setSplitIndex(-1);
 	}
 	
 	public int chooseFeature(Matrix features, Matrix labels, List<Integer> skip) {
 		double min_info = Double.MAX_VALUE;
 		int min_idx = -1;
+		
+		//consider features not already split on
 		for (int k = 0; k < features.cols(); k++) {
+			//skip features already split on
 			boolean fSkip = false;
 			for (int j = 0; j < skip.size(); j++) {
 				if (skip.get(j) == k) {
@@ -28,6 +33,8 @@ public class DecisionTreeNode{
 			if (fSkip) {
 				continue;
 			}
+			
+			//find lowest info split for remaining features
 			double feature_info = info(features, labels, k);
 			if (feature_info < min_info) {
 				min_idx = k;
@@ -35,6 +42,10 @@ public class DecisionTreeNode{
 			}
 		}
 		return min_idx;
+	}
+	
+	public double getEstimate(){
+		return this.getLabels().mostCommonValue(0);
 	}
 	
 	private double info(Matrix features, Matrix labels, int feature_idx) {
@@ -58,17 +69,49 @@ public class DecisionTreeNode{
 		return score;
 	}
 	
-	public double getEstimate(){
-		return this.getLabels().mostCommonValue(0);
-	}
-	
 	public double decide(double[] features){
 		return this.getEstimate(); 
 	}
 	
 	public boolean splitOnFeature(int splitIndex, List<Integer> skipIndices){
 		this.setSplitIndex(splitIndex);
-		return false;
+		boolean successfulSplit = false;
+		Matrix[] childrenFeatures = null;
+		Matrix[] childrenLabels = null;
+		
+		ArrayList<DecisionTreeNode> kiddies = new ArrayList<DecisionTreeNode>();
+		MatrixSplitter ms = new MatrixSplitter(this.getFeatures(), this.getLabels(), splitIndex);
+		try{
+			childrenFeatures = ms.getSplitFeatures();
+			childrenLabels = ms.getSplitLabels();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		if(childrenFeatures == null || childrenLabels == null){
+			return false;
+		}
+		
+		for(int i = 0; i < childrenFeatures.length; ++i){
+			ArrayList<Integer> newSkipIndices = new ArrayList<Integer>(this.getSkipIndices());
+			newSkipIndices.add(splitIndex);
+			if(childrenFeatures[i].rows() > 0){
+				kiddies.add(new DecisionTreeNode(childrenFeatures[i], childrenLabels[i], newSkipIndices));
+				successfulSplit = true;
+			}
+			else{
+				kiddies.add(null);	//this basically says there's no rows for this particular split, so don't go down this path
+			}
+		}
+		
+		this.setChildren((DecisionTreeNode[]) kiddies.toArray());
+		if(successfulSplit){
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 	
 	private double entropy(Map<Integer, Double> histo) {
