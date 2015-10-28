@@ -24,7 +24,6 @@ public class ID3Tree {
 		System.out.println("Split index: " + splitIndex);
 		
 		//do the split, recursively call on them
-		nodeSkipIndices.add(splitIndex);
 		if(node.splitOnFeature(splitIndex, nodeSkipIndices)){
 			for(DecisionTreeNode n : node.getChildren()){
 				rExpandTree(n);
