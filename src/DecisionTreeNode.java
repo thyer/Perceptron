@@ -11,7 +11,7 @@ public class DecisionTreeNode{
 	private List<Integer> skipIndices;
 	
 	public DecisionTreeNode(Matrix features, Matrix labels, List<Integer> skipIndices){
-		System.out.println("Constructing node with skipIndices: " + skipIndices.toString());
+		//System.out.println("Constructing node with skipIndices: " + skipIndices.toString());
 		this.setFeatures(features);
 		this.setLabels(labels);
 		this.setSkipIndices(skipIndices);
@@ -37,7 +37,7 @@ public class DecisionTreeNode{
 			
 			//find lowest info split for remaining features
 			double feature_info = info(features, labels, k);
-			System.out.println("Info for feature " + k + ": " + feature_info);
+			//System.out.println("Info for feature " + k + ": " + feature_info);
 			if (feature_info < min_info) {
 				min_idx = k;
 				min_info = feature_info;
@@ -77,7 +77,22 @@ public class DecisionTreeNode{
 	}
 	
 	public double decide(double[] features){
-		return this.getEstimate(); 
+		if(this.children == null || this.children.length < 2){
+			//System.out.println("Children of deciding node is: " + this.children);
+			//System.out.println("\tskip indices are: " + this.skipIndices.toString());
+			return this.getEstimate();
+		}
+		else{
+			//System.out.println("Propagating to child for decide");
+			for(DecisionTreeNode n : children){
+				if (n.getFeatures().row(0)[this.splitIndex] == features[this.splitIndex]){
+					return n.decide(features);
+				}
+			}
+			
+		}
+		System.out.println("NO CHILDREN FOUND WITH VALUE: " + features[splitIndex] + " ON INDEX " + splitIndex);
+		return this.getEstimate();
 	}
 	
 	public boolean splitOnFeature(int splitIndex, List<Integer> skipIndices){

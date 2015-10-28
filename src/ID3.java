@@ -12,12 +12,14 @@ public class ID3 extends SupervisedLearner{
 	}
 	
 	public void train(Matrix features, Matrix labels) throws Exception {
-		//this.repairMatrix(features);
-		//this.repairMatrix(labels);
+		this.repairMatrix(features);
+		this.repairMatrix(labels);
+		features.shuffle(rand, labels);
 		
 		tree = new ID3Tree(features, labels);
 		DecisionTreeNode root = tree.getRoot();
 		tree.rExpandTree(root);
+		tree.toString();
 	}
 
 	public void predict(double[] features, double[] labels) throws Exception {
@@ -25,10 +27,11 @@ public class ID3 extends SupervisedLearner{
 	}
 	
 	private void repairMatrix(Matrix toRepair){
-		for(int i = 0; i < toRepair.rows(); ++i){
-			for(int j = 0; j < toRepair.cols(); ++j){
+		for(int j = 0; j < toRepair.cols(); ++j){
+			for(int i = 0; i < toRepair.rows(); ++i){
 				if(toRepair.get(i, j) == Matrix.MISSING){
-					//whatever we want to do with it
+					toRepair.set(i, j, toRepair.mostCommonValue(j));
+					//System.out.println("Repaired (" + i + ", " + j + ") with current value of " + toRepair.get(i, j));
 				}
 			}
 		}
