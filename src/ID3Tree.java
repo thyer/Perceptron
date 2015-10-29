@@ -40,7 +40,8 @@ public class ID3Tree {
 			for(int i : node.getSkipIndices()){
 				output += "\n\tindex: " + i + ", value: " + path.get(i);
 			}
-			System.out.println(output);
+			output += "\n\tThis leaf decides: " + node.getEstimate();
+			//System.out.println(output);
 		}
 	}
 	
@@ -51,8 +52,73 @@ public class ID3Tree {
 	}
 	@Override
 	public String toString(){
-		String output = "Tree with root containing: " + root.getFeatures().rows() + " instances splits on " + root.getSplitIndex();
+		String output = "";
+		ArrayList<DecisionTreeNode> layer = new ArrayList<DecisionTreeNode>();
+		layer.add(root);
+		for (int i = 1; layer.size() > 0; ++i){
+			output+= "\nLayer: " + i;
+			ArrayList<DecisionTreeNode> nextLayer = new ArrayList<DecisionTreeNode>();
+			for(DecisionTreeNode n : layer){
+				output+="\n\tNode has split Index of : " + n.getSplitIndex() + " and " + n.getFeatures().rows() + " instance(s) ";
+				if(n.getChildren()!=null){
+					for(DecisionTreeNode d : n.getChildren()){
+						nextLayer.add(d);
+					}
+				}
+				else{
+					output+= " (it's a leaf node)";
+				}
+			}
+			layer = nextLayer;
+		}
 		return output;
+	}
+
+	public void pruneTree(Matrix mxValidationFeatures, Matrix mxValidationLabels) {
+		ArrayList<DecisionTreeNode> notLeaves = new ArrayList<DecisionTreeNode>();
+		int nodesPruned = 0;
+		this.rDFSAddNode(notLeaves, root);
+		int cBestGuessTotal = assessSplit(mxValidationFeatures, mxValidationLabels);
+		//System.out.println("Best guess baseline: " + cBestGuessTotal);
+		//System.out.println("notLeaves has a size of: " + notLeaves.size());
+		for(DecisionTreeNode n : notLeaves){
+			DecisionTreeNode[] tempChildren = n.getChildren();
+			n.setChildren(null);
+			int guessedRight = assessSplit(mxValidationFeatures, mxValidationLabels);
+			if(guessedRight > cBestGuessTotal){
+				//System.out.println("Guessed better than " + cBestGuessTotal + " by " + guessedRight);
+				nodesPruned++;
+				cBestGuessTotal = guessedRight;
+			}
+			else{
+				n.setChildren(tempChildren);
+			}
+		}
+		
+		//System.out.println("After pruning, " + nodesPruned + " nodes were removed");
+		
+	}
+	
+	private int assessSplit(Matrix features, Matrix labels){
+		int guessesRight = 0;
+		for(int i = 0; i < features.rows(); ++i){
+			if(labels.get(i, 0) == root.decide(features.row(i))){
+				guessesRight++;
+			}
+		}
+		return guessesRight;
+	}
+	
+	private void rDFSAddNode(ArrayList<DecisionTreeNode> toAdd, DecisionTreeNode n){
+		if(n.getChildren()==null || n.getChildren().length < 2){
+			toAdd.add(n);
+		}
+		else{
+			for(DecisionTreeNode n1 : n.getChildren()){
+				rDFSAddNode(toAdd, n1);
+			}
+			toAdd.add(n);
+		}
 	}
 	
 	

@@ -46,7 +46,7 @@ public class DecisionTreeNode{
 		return min_idx;
 	}
 	
-	private double getEstimate(){
+	public double getEstimate(){
 		return this.getLabels().mostCommonValue(0);
 	}
 	
@@ -91,7 +91,7 @@ public class DecisionTreeNode{
 			}
 			
 		}
-		System.out.println("NO CHILDREN FOUND WITH VALUE: " + features[splitIndex] + " ON INDEX " + splitIndex);
+		//System.out.println("NO CHILDREN FOUND WITH VALUE: " + features[splitIndex] + " ON INDEX " + splitIndex);
 		return this.getEstimate();
 	}
 	
@@ -147,6 +147,8 @@ public class DecisionTreeNode{
 		}
 		return output;
 	}
+	
+
 	
 	
 	public void setChildren(DecisionTreeNode[] nodes){

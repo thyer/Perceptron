@@ -40,8 +40,8 @@ public class MatrixSplitter {
 				categoriesSoFar.add(item);
 			}
 		}
-		
-		if(categoriesSoFar.size()<1){
+		//System.out.println("CATEGORIES ON SPLIT: " + categoriesSoFar.size());
+		if(categoriesSoFar.size()<=1){
 			return;	//we have no data in our matrix
 		}
 		else if (categoriesSoFar.size() == 1){	//only one category exists for that feature
