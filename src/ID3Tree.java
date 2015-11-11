@@ -77,7 +77,7 @@ public class ID3Tree {
 	public void pruneTree(Matrix mxValidationFeatures, Matrix mxValidationLabels) {
 		ArrayList<DecisionTreeNode> notLeaves = new ArrayList<DecisionTreeNode>();
 		int nodesPruned = 0;
-		this.rDFSAddNode(notLeaves, root);
+		int depth = this.rDFSAddNode(notLeaves, root);
 		int cBestGuessTotal = assessSplit(mxValidationFeatures, mxValidationLabels);
 		//System.out.println("Best guess baseline: " + cBestGuessTotal);
 		//System.out.println("notLeaves has a size of: " + notLeaves.size());
@@ -95,8 +95,13 @@ public class ID3Tree {
 			}
 		}
 		
-		//System.out.println("After pruning, " + nodesPruned + " nodes were removed");
-		
+	}
+	
+	public int getNodeCount(){
+		ArrayList<DecisionTreeNode> nodes = new ArrayList<DecisionTreeNode>();
+		int depth = this.rDFSAddNode(nodes, root);
+		System.out.println("Depth : " + depth);
+		return nodes.size();
 	}
 	
 	private int assessSplit(Matrix features, Matrix labels){
@@ -109,15 +114,19 @@ public class ID3Tree {
 		return guessesRight;
 	}
 	
-	private void rDFSAddNode(ArrayList<DecisionTreeNode> toAdd, DecisionTreeNode n){
+	private int rDFSAddNode(ArrayList<DecisionTreeNode> toAdd, DecisionTreeNode n){
 		if(n.getChildren()==null || n.getChildren().length < 2){
 			toAdd.add(n);
+			return 1;
 		}
 		else{
+			int max = 0;
 			for(DecisionTreeNode n1 : n.getChildren()){
-				rDFSAddNode(toAdd, n1);
+				int t = rDFSAddNode(toAdd, n1);
+				max = Math.max(t, max);
 			}
 			toAdd.add(n);
+			return 1 + max;
 		}
 	}
 	

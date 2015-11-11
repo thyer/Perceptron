@@ -21,7 +21,7 @@ public class MLSystemManager {
 		else if (model.equals("backprop")) return new BackPropagation(rand);
 		// else if (model.equals("neuralnet")) return new NeuralNet(rand);
 		else if (model.equals("decisiontree")) return new ID3(rand);
-		// else if (model.equals("knn")) return new InstanceBasedLearner();
+		else if (model.equals("knn")) return new InstanceBasedLearner(rand);
 		else throw new Exception("Unrecognized model: " + model);
 	}
 

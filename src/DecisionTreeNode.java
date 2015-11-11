@@ -58,9 +58,10 @@ public class DecisionTreeNode{
 			for (int j = 0; j < features.rows(); j++) {
 				if (features.get(j, feature_idx) == k) {
 					int label = (int) labels.get(j, 0);
-					Double value = 1.0;
+					double value = 1.0;
 					if(histo.get(label) != null){
 						value += histo.get(label);
+						histo.remove(label);
 					}
 					histo.put(label, value);
 					total++;
@@ -74,6 +75,15 @@ public class DecisionTreeNode{
 		}
 		//System.out.println("Histo for index: " + feature_idx + ": " + histo.toString());
 		return score;
+	}
+	
+	private double entropy(Map<Integer, Double> histo) {
+		double output = 0;
+		for (int key : histo.keySet()){
+			double proportion = histo.get(key);
+			output += -1 * proportion * Math.log(proportion)/Math.log(2.0);
+		}
+		return output;
 	}
 	
 	public double decide(double[] features){
@@ -138,15 +148,7 @@ public class DecisionTreeNode{
 			return false;
 		}
 	}
-	
-	private double entropy(Map<Integer, Double> histo) {
-		double output = 0;
-		for (int key : histo.keySet()){
-			double proportion = histo.get(key);
-			output += -1 * proportion * Math.log(proportion)/Math.log(2.0);
-		}
-		return output;
-	}
+
 	
 
 	

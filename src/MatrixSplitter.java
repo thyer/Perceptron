@@ -34,15 +34,20 @@ public class MatrixSplitter {
 		
 		//first, find out how many possible splits are in this feature
 		ArrayList<Double> categoriesSoFar = new ArrayList<Double>();
+		ArrayList<Double> labelsSoFar = new ArrayList<Double>();
 		for(int i = 0; i < this.basefeatures.rows(); ++i){
 			double item = this.basefeatures.row(i)[this.splitIndex];
+			double label = this.baselabels.row(i)[0];
 			if (!categoriesSoFar.contains(item)){
 				categoriesSoFar.add(item);
 			}
+			if(!labelsSoFar.contains(label)){
+				labelsSoFar.add(label);
+			}
 		}
 		//System.out.println("CATEGORIES ON SPLIT: " + categoriesSoFar.size());
-		if(categoriesSoFar.size()<=1){
-			return;	//we have no data in our matrix
+		if(categoriesSoFar.size()<=1 || labelsSoFar.size() <= 1){
+			return;	//we have no data or only one class in our matrix
 		}
 		else if (categoriesSoFar.size() == 1){	//only one category exists for that feature
 			this.splitFeatures.add(new Matrix(this.basefeatures, 0, 0, this.basefeatures.rows(), this.basefeatures.cols()));
