@@ -11,6 +11,7 @@ public class DecisionTreeNode{
 	private List<Integer> skipIndices;
 	
 	public DecisionTreeNode(Matrix features, Matrix labels, List<Integer> skipIndices){
+		//System.out.println("Constructing node with skipIndices: " + skipIndices.toString());
 		this.setFeatures(features);
 		this.setLabels(labels);
 		this.setSkipIndices(skipIndices);
@@ -36,7 +37,7 @@ public class DecisionTreeNode{
 			
 			//find lowest info split for remaining features
 			double feature_info = info(features, labels, k);
-			System.out.println("Info for feature " + k + ": " + feature_info);
+			//System.out.println("Info for feature " + k + ": " + feature_info);
 			if (feature_info < min_info) {
 				min_idx = k;
 				min_info = feature_info;
@@ -45,7 +46,7 @@ public class DecisionTreeNode{
 		return min_idx;
 	}
 	
-	private double getEstimate(){
+	public double getEstimate(){
 		return this.getLabels().mostCommonValue(0);
 	}
 	
@@ -57,9 +58,10 @@ public class DecisionTreeNode{
 			for (int j = 0; j < features.rows(); j++) {
 				if (features.get(j, feature_idx) == k) {
 					int label = (int) labels.get(j, 0);
-					Double value = 1.0;
+					double value = 1.0;
 					if(histo.get(label) != null){
 						value += histo.get(label);
+						histo.remove(label);
 					}
 					histo.put(label, value);
 					total++;
@@ -75,11 +77,38 @@ public class DecisionTreeNode{
 		return score;
 	}
 	
+	private double entropy(Map<Integer, Double> histo) {
+		double output = 0;
+		for (int key : histo.keySet()){
+			double proportion = histo.get(key);
+			output += -1 * proportion * Math.log(proportion)/Math.log(2.0);
+		}
+		return output;
+	}
+	
 	public double decide(double[] features){
-		return this.getEstimate(); 
+		if(this.children == null || this.children.length < 2){
+			//System.out.println("Children of deciding node is: " + this.children);
+			//System.out.println("\tskip indices are: " + this.skipIndices.toString());
+			return this.getEstimate();
+		}
+		else{
+			//System.out.println("Propagating to child for decide");
+			for(DecisionTreeNode n : children){
+				if (n.getFeatures().row(0)[this.splitIndex] == features[this.splitIndex]){
+					return n.decide(features);
+				}
+			}
+			
+		}
+		//System.out.println("NO CHILDREN FOUND WITH VALUE: " + features[splitIndex] + " ON INDEX " + splitIndex);
+		return this.getEstimate();
 	}
 	
 	public boolean splitOnFeature(int splitIndex, List<Integer> skipIndices){
+		if(splitIndex == -1){
+			return false;
+		}
 		this.setSplitIndex(splitIndex);
 		boolean successfulSplit = false;
 		Matrix[] childrenFeatures = null;
@@ -95,7 +124,7 @@ public class DecisionTreeNode{
 			e.printStackTrace();
 		}
 		
-		if(childrenFeatures == null || childrenLabels == null){
+		if(childrenFeatures == null || childrenLabels == null || childrenFeatures.length < 2){
 			return false;
 		}
 		
@@ -111,7 +140,7 @@ public class DecisionTreeNode{
 			}
 		}
 		
-		this.setChildren((DecisionTreeNode[]) kiddies.toArray());
+		this.setChildren(kiddies.toArray(new DecisionTreeNode[kiddies.size()]));
 		if(successfulSplit){
 			return true;
 		}
@@ -119,14 +148,9 @@ public class DecisionTreeNode{
 			return false;
 		}
 	}
+
 	
-	private double entropy(Map<Integer, Double> histo) {
-		double output = 1;
-		for (int key : histo.keySet()){
-			output *= histo.get(key);
-		}
-		return output;
-	}
+
 	
 	
 	public void setChildren(DecisionTreeNode[] nodes){

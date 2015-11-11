@@ -215,6 +215,15 @@ public class Matrix {
 	// Returns the number of values associated with the specified attribute (or column)
 	// 0=continuous, 2=binary, 3=trinary, etc.
 	int valueCount(int col) { return m_enum_to_str.get(col).size(); }
+	
+	void addValueToColumn(int col) throws Exception{
+		if(m_enum_to_str.get(col).size() > 1){
+			m_enum_to_str.get(col).put(-1, "Missing");
+		}
+		else{
+			throw new Exception("Trying to add to unary/continuous set");
+		}
+	}
 
 	// Shuffles the row order
 	void shuffle(Random rand) {
