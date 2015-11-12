@@ -14,8 +14,9 @@ public class InstanceBasedLearner extends SupervisedLearner {
 	private Random rand;
 	private Matrix mxFeatures;
 	private Matrix mxLabels;
-	private final int K = 3;
+	private final int K = 13;
 	private final boolean DISTANCE_WEIGHTING = false;
+	private final boolean REGRESSION = true;
 
 
 	public InstanceBasedLearner(Random rand) {
@@ -56,21 +57,30 @@ public class InstanceBasedLearner extends SupervisedLearner {
 		
 		//finally, vote
 		double bestLabel = 0.0;
-		double bestLabelTotal = 0.0;
-		for(double key : votingMap.keySet()){
-			double total = votingMap.get(key);
-			if(total > bestLabelTotal){
-				bestLabel = key;
-				bestLabelTotal = total;
+		if(!REGRESSION || !DISTANCE_WEIGHTING){
+			double bestLabelTotal = 0.0;
+			for(double key : votingMap.keySet()){
+				double total = votingMap.get(key);
+				if(total > bestLabelTotal){
+					bestLabel = key;
+					bestLabelTotal = total;
+				}
+			}
+			labels[0] = bestLabel;
+		}
+		else{
+			double totalWeights = 0.0;
+			for(double key : votingMap.keySet()){
+				bestLabel += votingMap.get(key);
 			}
 		}
-		labels[0] = bestLabel;
+		
 
 	}
 	
 	private double calcVote(Point p) {
 		if(this.DISTANCE_WEIGHTING == true){
-			return 1.0/p.distance;
+			return 1.0/Math.pow(p.distance, 2.0);
 		}
 		else{
 			return 1;
