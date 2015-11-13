@@ -35,15 +35,17 @@ public abstract class SupervisedLearner {
 		if(labelValues == 0) // If the label is continuous...
 		{
 			// The label is continuous, so measure root mean squared error
+			System.out.println("Accuracy will be MSE");
 			double[] pred = new double[1];
 			double sse = 0.0;
 			for(int i = 0; i < features.rows(); i++)
 			{
 				double[] feat = features.row(i);
 				double[] targ = labels.row(i);
-				pred[0] = 0.0; // make sure the prediction is not biassed by a previous prediction
+				pred[0] = 0.0; // make sure the prediction is not biased by a previous prediction
 				predict(feat, pred);
 				double delta = targ[0] - pred[0];
+				//System.out.println("Predicted: " + pred[0] + ", Target: " + targ[0] + ", Delta: " + delta);
 				sse += (delta * delta);
 			}
 			return Math.sqrt(sse / features.rows());

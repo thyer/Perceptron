@@ -1,22 +1,15 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Comparator;
 
 public class InstanceBasedLearner extends SupervisedLearner {
 	private Random rand;
 	private Matrix mxFeatures;
 	private Matrix mxLabels;
-	private final int K = 13;
-	private final boolean DISTANCE_WEIGHTING = false;
-	private final boolean REGRESSION = true;
+	private final int K = 5;
+	private final boolean DISTANCE_WEIGHTING = true;
+	private final boolean REGRESSION = false;
 
 
 	public InstanceBasedLearner(Random rand) {
@@ -57,7 +50,15 @@ public class InstanceBasedLearner extends SupervisedLearner {
 		
 		//finally, vote
 		double bestLabel = 0.0;
-		if(!REGRESSION || !DISTANCE_WEIGHTING){
+		if(REGRESSION){
+			double totalWeights = 0.0;
+			for(double key : votingMap.keySet()){
+				bestLabel += key * votingMap.get(key);
+				totalWeights += votingMap.get(key);
+			}
+			labels[0] = bestLabel/totalWeights;
+		}
+		else{
 			double bestLabelTotal = 0.0;
 			for(double key : votingMap.keySet()){
 				double total = votingMap.get(key);
@@ -68,19 +69,13 @@ public class InstanceBasedLearner extends SupervisedLearner {
 			}
 			labels[0] = bestLabel;
 		}
-		else{
-			double totalWeights = 0.0;
-			for(double key : votingMap.keySet()){
-				bestLabel += votingMap.get(key);
-			}
-		}
 		
 
 	}
 	
 	private double calcVote(Point p) {
 		if(this.DISTANCE_WEIGHTING == true){
-			return 1.0/Math.pow(p.distance, 2.0);
+			return 1.0/Math.pow(p.distance + .0000001, 2.0);
 		}
 		else{
 			return 1;
