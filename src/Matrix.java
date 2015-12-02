@@ -254,6 +254,7 @@ public class Matrix {
 	double columnMean(int col) {
 		double sum = 0;
 		int count = 0;
+		int missing = 0;
 		for(int i = 0; i < rows(); i++) {
 			double v = get(i, col);
 			if(v != MISSING)
@@ -261,6 +262,12 @@ public class Matrix {
 				sum += v;
 				count++;
 			}
+			else{
+				missing++;
+			}
+		}
+		if(missing == rows()){
+			return Matrix.MISSING;
 		}
 		return sum / count;
 	}
