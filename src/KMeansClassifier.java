@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class KMeansClassifier{
 	private Matrix features;
@@ -39,9 +40,10 @@ public class KMeansClassifier{
 				bestCluster.addInstance(features, row, 0, 1);
 			}
 			System.out.println("********************************************");
-			System.out.println("At end of round: " + ++round + "\n" + this.toString());
+			System.out.println("At end of round: " + ++round + "\n");
 			currSSE = this.calcSSE();
-			System.out.println("Total SSE: " + currSSE + "\n\n");
+			System.out.println("Total SSE: " + currSSE + "\n");
+			System.out.println("Silhouette Score: " + this.calcSilhouetteScore() + "\n");
 		}while(prevSSE != currSSE && this.calcNewCentroids());
 	}
 	
@@ -75,6 +77,30 @@ public class KMeansClassifier{
 		}
 		return totalSSE;
 	}
+	
+	public double calcSilhouetteScore(){
+		double totalScore = 0;
+		int totalInstances = 0;
+		for(KMeansCluster kmc : clusters){
+			for(int i = 0; i < kmc.getInstances().rows(); ++i){
+				double[] instance = kmc.getInstances().row(i);
+				double a_i = kmc.calcAverageDissimilarity(instance);
+				double b_i = Double.MAX_VALUE;
+				for(KMeansCluster kmc2: clusters){
+					if(kmc2.containsInstance(instance)){
+						continue;
+					}
+					double score = kmc2.calcAverageDissimilarity(instance);
+					b_i = (score < b_i) ? score : b_i;
+				}
+				totalScore+= (b_i - a_i) / Math.max(b_i, a_i);
+				totalInstances++;
+			}
+		}
+		
+		return totalScore/totalInstances;
+	}
+	
 	public String toString(){
 		String output = "";
 		int i = 0;
@@ -108,19 +134,22 @@ public class KMeansClassifier{
 		Matrix m = new Matrix();
 		try {
 			String base = "C:\\Users\\Trent\\Documents\\GitHub\\Perceptron\\src\\";
-			String file = "laborWithID.arff";
+			String file = "iris.arff";
 			m.loadArff(base + file);
-			Matrix m_mod = new Matrix(m, 0, 1, m.rows(), m.cols()-2);
+			Matrix m_sponge = new Matrix(m, 0, 0, m.rows(), m.cols());
 			Matrix m_iris = new Matrix(m, 0, 0, m.rows(), m.cols()-1);
 			KMeansClassifier kmc;
 			if(file.equals("sponge.arff")){
-				kmc = new KMeansClassifier(m_mod, 5);
+				kmc = new KMeansClassifier(m_sponge, 4);
 			}
 			else if(file.equals("iris.arff")){
-				kmc = new KMeansClassifier(m_iris, 7);
+				m_iris.shuffle(new Random());
+				kmc = new KMeansClassifier(m_iris, 6);
 			}
 			else{
-				kmc = new KMeansClassifier(m, 4);
+				m.shuffle(new Random());
+				m.normalize();
+				kmc = new KMeansClassifier(m, 3);
 			}
 			kmc.cluster();
 		} catch (Exception e) {

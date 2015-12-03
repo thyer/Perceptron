@@ -1,8 +1,5 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 public class KMeansCluster {
+	private final boolean KMEDOIDS = false;
 	private Matrix instances;
 	private double[] centroid;
 
@@ -16,6 +13,28 @@ public class KMeansCluster {
 		
 	}
 	
+	public boolean containsInstance(double[] instance){
+		for(int i = 0; i < instances.rows(); ++i){
+			if (instances.row(i) == instance){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public double calcAverageDissimilarity(double[] toCompare){
+		double totalDissimilarity = 0;
+		for (int r = 0; r < instances.rows(); ++r){
+			double distance = 0;
+			double[] instance = instances.row(r);
+			for(int i = 0; i < instance.length; ++i){
+				distance += Math.pow(toCompare[i] - instance[i], 2.0);
+			}
+			totalDissimilarity += Math.sqrt(distance);
+		}
+		return totalDissimilarity/instances.rows();
+	}
+	
 	public Matrix getInstances() {
 		return instances;
 	}
@@ -26,41 +45,39 @@ public class KMeansCluster {
 	}
 
 	public void calcNewCentroid() {
-		//System.out.println("Calculating new centroid...");
+		double[] newCentroid = null;
+		
 		//If no instances, stop
 		if(this.getInstances().rows() < 1){
-			//System.out.println("No instances, returning");
 			return;
 		}
-		//Initialize the new centroid to all zero
-		double[] newCentroid = new double[centroid.length];
-		for(int i = 0; i < newCentroid.length; ++i){
-			if(this.instances.valueCount(i) == 0){
-				newCentroid[i] = this.instances.columnMean(i);
+		if(KMEDOIDS){
+			double bestDistance = Double.MAX_VALUE;
+			for(int i = 0; i < instances.rows(); ++i){
+				double[] instance = instances.row(i);
+				double distance = this.calcAverageDissimilarity(instance);
+				if(distance < bestDistance){
+					bestDistance = distance;
+					newCentroid = instance;
+				}
 			}
-			else{
-				newCentroid[i] = this.instances.mostCommonValue(i);
+			
+		}
+		else{
+			//Initialize the new centroid to all zero
+			newCentroid = new double[centroid.length];
+			for(int i = 0; i < newCentroid.length; ++i){
+				if(this.instances.valueCount(i) == 0){
+					newCentroid[i] = this.instances.columnMean(i);
+				}
+				else{
+					newCentroid[i] = this.instances.mostCommonValue(i);
+				}
 			}
 		}
 		
 		//Finally, set the newCentroid to be the cluster's centroid
 		this.centroid = newCentroid;
-		String output = "[";
-		for(int i = 0; i < centroid.length; ++i){
-			if(centroid[i] == Matrix.MISSING){
-				output+= "?";
-			}
-			else{
-				output+= Math.round(centroid[i]*1000d)/1000d;
-			}
-			if(i < centroid.length -1){
-				output += ", ";
-			}
-			else{
-				output+= "]";
-			}
-		}
-		//System.out.println(output);
 	}
 
 	public double getDistance(double[] instance) {
