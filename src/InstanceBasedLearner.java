@@ -201,7 +201,7 @@ public class InstanceBasedLearner extends SupervisedLearner {
 
 		@Override
 		public String toString(){
-			return "Label: " + label + ", distance: " + distance;
+			return "Label: " + label + ", Distance: " + distance;
 		}
 
 		@Override
