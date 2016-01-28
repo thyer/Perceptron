@@ -236,7 +236,7 @@ public class BackPropagation extends SupervisedLearner
 		}while(loop);
 		
 		System.out.println("final train mse: " + trainMSE.get(trainMSE.size() - 1));
-		//System.out.println("Train mse along the way: " + trainMSE.toString());
+		//System.out.println("train mse along the way: " + trainMSE.toString());
 		System.out.println("final validation mse: " + testMSE.get(testMSE.size() - 1));
 		//System.out.println("validation mse along the way: " + testMSE.toString());
 		System.out.println("final validation accuracy: " + accuracies.get(accuracies.size() - 1));
